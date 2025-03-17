@@ -28,7 +28,7 @@ from transformers import BertModel, BertTokenizer
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', '-d', default="datasets/HMP_1024_4class_test_new.csv", help='input csv file', type=str)
 parser.add_argument('--out_csv_dir', '-o', default="test_output.csv", help='output csv file save name', type=str)
-parser.add_argument('--n_classes', '-n', default=6, help='number of classes', type=int)
+parser.add_argument('--n_classes', '-n', default=5, help='number of classes', type=int)
 parser.add_argument('--freeze_layer', '-f', default=20, help='number of layers to freeze', type=int)
 parser.add_argument('--batch_size', '-b', default=1, help='batch size', type=int)
 parser.add_argument('--learning_rate', '-l', default=1e-4, help='learning rate', type=float)
@@ -58,8 +58,8 @@ N_classes = args.n_classes
 warnings.filterwarnings("ignore")
 
 ### CHANGE ROOT FOLDER HERE ###
-main_train_csv_folder_path = "sungyoon/env_project/datasets/bacteria_inference/NCBI_bacteria_csv_0218/"
-main_output_save_folder_path = "sungyoon/env_project/results/bacteria_inference/NCBI_bacteria_csv_0218/"
+main_train_csv_folder_path = "sungyoon/env_project/datasets/fungi_inference/NCBI_fungi_csv_0218/"
+main_output_save_folder_path = "sungyoon/env_project/results/fungi_inference/NCBI_fungi_csv_0218/"
 
 def merge_inferenece(df, df_compare):
 ### BELOW CODE IS FOR MERGING INFERENCE RESULTS WITH THEIR INFORMATION
@@ -240,31 +240,50 @@ def freeze_layers(model):
 
 def change_labels(df):
     # 0:normal(else) / 1:secretion / 2: resistance / 3: toxin / 4: anti-toxin / 5:virulence / 6: invasion / 7: kill / 8:phage / 9: putative / 10: hypothetical, unknown, uncharacterized
+    # for fungi -:normal / 1:adhesion / 2: stress / 3: acquisition / 4: AMR
     labels = []
+    # for item in df["max label"]:
+    #     if item == "0":
+    #         labels.append("normal")
+    #     elif item == "1":
+    #         labels.append("secretion")
+    #     elif item == "2":
+    #         labels.append("resistance")
+    #     elif item == "3":
+    #         labels.append("toxin")
+    #     elif item == "4":
+    #         labels.append("anti-toxin")
+    #     else:
+    #         labels.append("virulence")
     for item in df["max label"]:
         if item == "0":
             labels.append("normal")
         elif item == "1":
-            labels.append("secretion")
+            labels.append("adhesion")
         elif item == "2":
-            labels.append("resistance")
+            labels.append("stress")
         elif item == "3":
-            labels.append("toxin")
-        elif item == "4":
-            labels.append("anti-toxin")
+            labels.append("acquisition")
         else:
-            labels.append("virulence")
-    
+            labels.append("AMR")
     return labels
 
 def change_col_name(df):
+#     df.rename(columns={
+#     0: 'normal',
+#     1: 'secretion',
+#     2: 'resistance',
+#     3: 'toxin',
+#     4: 'anti-toxin',
+#     5: 'virulence'
+# }, inplace=True)
+    
     df.rename(columns={
     0: 'normal',
-    1: 'secretion',
-    2: 'resistance',
-    3: 'toxin',
-    4: 'anti-toxin',
-    5: 'virulence'
+    1: 'adhesion',
+    2: 'stress',
+    3: 'acquisition',
+    4: 'AMR'
 }, inplace=True)
     
     return df
@@ -311,7 +330,7 @@ if __name__ == "__main__":
         # best_weights_path = main_inference_path+"best_weights.pth"
         
         ## change weights path, change csv path for inference
-        best_weights_path = "sungyoon/env_project/results/Uniprot_1017_8800/best_weights.pth"
+        best_weights_path = "sungyoon/env_project/results/fungi_train/Swissprot_0725_3000/best_weights.pth"
         # test_csv = "Salmonella_typhimurium_(strainLT2)"
 
         ###BACTERIA NAME###

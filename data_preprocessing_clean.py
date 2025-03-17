@@ -144,6 +144,46 @@ def fasta_2_csv(fasta_path, save_path):
     print("saved fasta to df format!\n-------")
     return df
 
+def fasta_2_csv_uniprot_keyword(fasta_paths, save_path):
+    # This is the code for reading all the fasta files from uniprot, downloaded based on the keyword, can be used for GO as well
+    print("reading fasta file...\n-------")
+    df = pd.DataFrame()
+    for fasta_path in fasta_paths:
+        fasta_data=SeqIO.parse(open(fasta_path), "fasta")
+        species_strand_list = []
+        id_list = []
+        seq_list = []
+        des_list = []
+        seq_len_list = []
+        label_list = []
+        data_type_list = []
+        
+        label = fasta_path.split("_")[7]
+        data_type = fasta_path.split("_")[8]
+        
+        for fasta in fasta_data:
+            id_list.append(fasta.id)
+            seq_list.append(str(fasta.seq))
+            des_list.append(fasta.description)
+            seq_len_list.append(len(fasta.seq))
+            match = re.search(r'OS=(.*?) OX=', fasta.description)
+            species_strand_list.append(match.group(1))
+            label_list.append(label)
+            data_type_list.append(data_type)
+    
+    
+        df_class = pd.DataFrame([x for x in zip(species_strand_list,
+                                                id_list, des_list, seq_list, seq_len_list, label_list, data_type_list)],
+                                columns=['species and strand', 'id', 'description',
+                                        'sequence', 'length of sequence', 'label', 'data type'])
+        df = pd.concat([df, df_class])
+    print("read fasta file and now saving to df...\n-------")
+    
+    df.to_csv(save_path+"Swissprot_1008_5_class.csv", index=False)
+    
+    print("saved fasta to df format!\n-------")
+    return df
+
 def fasta_2_csv_all(fasta_path, save_path):
     
     print("reading fasta file...\n-------")
@@ -255,10 +295,10 @@ def drop_length(df):
     return df1
 
 # checks for the total count of each label and plot the distribution
-# def plot_check_labels_count(df):
-#     print("checking count for each labels...\n-------")
-#     df.groupby([df.label, 'label']).count().plot(kind='bar')
-#     plt.show()
+def plot_check_labels_count(df):
+    print("checking count for each labels...\n-------")
+    df.groupby([df.label, 'label']).count().plot(kind='bar')
+    plt.show()
 
 def drop_inference_data(df, organism_list):
     print("removing rows belonging to the 71 species...\n-------")
@@ -502,18 +542,21 @@ if __name__ == "__main__":
     # df = pd.read_csv("datasets/sample_0216/test.csv")
     # check_labels_count(df)
     # df = pd.read_csv("datasets/sample_0216/valid.csv")
-    # check_labels_count(df)
-    df1 = pd.read_csv("datasets/new_HMP_Swissprot/HMP_Swissprot_0403.csv")
+    # # check_labels_count(df)
     
-    df_sample = split_data(df1)
-    index_no = []
-    for i in range(len(df_sample["id"])):
-       index_no.append(i)
-    df_sample["tensor id"] = index_no
-    df_sample.to_csv("datasets/Batch_train_start/HMP_Swissprot_6class_100_0701.csv", index = False)
-    print(df_sample)
-    check_labels_count(df_sample)
-    dataset_split(df_sample, "datasets/HMP_Swissprot_0701_100/")
+    
+    
+    # df1 = pd.read_csv("datasets/new_HMP_Swissprot/HMP_Swissprot_0403.csv")
+    
+    # df_sample = split_data(df1)
+    # index_no = []
+    # for i in range(len(df_sample["id"])):
+    #    index_no.append(i)
+    # df_sample["tensor id"] = index_no
+    # df_sample.to_csv("datasets/Batch_train_start/HMP_Swissprot_6class_100_0701.csv", index = False)
+    # print(df_sample)
+    # check_labels_count(df_sample)
+    # dataset_split(df_sample, "datasets/HMP_Swissprot_0701_100/")
     
     
     # df1 = pd.read_csv(tremble_save_path+"Tremble_trainable.csv")
@@ -649,3 +692,14 @@ if __name__ == "__main__":
     # check_labels_count(df)
     # df.to_csv("datasets/TremBLE(UNIPROT)/Bacteria/batch_data/batch_0_5class.csv", index=False)
     
+    
+    dataset_dir = "datasets/Swissprot/"
+    # fasta_file =[]
+    # for item in os.listdir(dataset_dir):
+    #     fasta_file.append(dataset_dir+item)
+    
+    # df = fasta_2_csv_uniprot_keyword(fasta_file, "datasets/Swissprot/")
+    # print(df)
+    
+    df = pd.read_csv("datasets/Swissprot/Swissprot_1008_5_class.csv")
+    check_labels_count(df)
